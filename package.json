@@ -5,7 +5,7 @@
   "main": "index.js",
   "type": "module",
   "scripts": {
-    "test": "node --test \"tests/**/*.test.ts\"",
+    "test": "npm run build && node --test \"tests/**/*.test.ts\"",
     "test:watch": "node --test --watch \"tests/**/*.test.ts\"",
     "build": "rm -rf build && tsc && chmod 755 build/index.js",
     "lint": "eslint .",
@@ -33,7 +33,7 @@
   "author": "",
   "license": "MIT",
   "engines": {
-    "node": ">=20.11.0"
+    "node": ">=22.15.0"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.20.2",

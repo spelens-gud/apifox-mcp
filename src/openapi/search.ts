@@ -1,7 +1,4 @@
-import type { HttpMethod, OpenApiDocument, OpenApiOperation } from "./types.js";
-
-const typesModulePath = import.meta.url.endsWith(".ts") ? "./types.ts" : "./types.js";
-const { HTTP_METHODS } = (await import(new URL(typesModulePath, import.meta.url).href)) as typeof import("./types.js");
+import { HTTP_METHODS, type HttpMethod, type OpenApiDocument, type OpenApiOperation } from "./types.js";
 
 export interface EndpointSearchInput {
   path?: string;
