@@ -15,7 +15,13 @@
     "inspect:http": "npm run build && npx @modelcontextprotocol/inspector http://localhost:3000/mcp",
     "dev": "npm run build && node dev",
     "serve:stdio": "npm run build && APIFOX_MCP_TRANSPORT=stdio node build/index.js",
-    "serve:http": "npm run build && APIFOX_MCP_TRANSPORT=http PORT=3000 node build/index.js"
+    "serve:http": "npm run build && APIFOX_MCP_TRANSPORT=http PORT=3000 node build/index.js",
+    "gen:tool": "hygen tool new",
+    "gen:prompt": "hygen prompt new",
+    "gen:resource": "hygen resource new",
+    "knip": "knip",
+    "knip:production": "knip --production",
+    "knip:fix": "knip --fix"
   },
   "keywords": [
     "mcp",

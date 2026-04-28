@@ -7,7 +7,7 @@ services:
       dockerfile: Dockerfile
     container_name: mcp-server-starter
     environment:
-      - STARTER_TRANSPORT=http
+      - APIFOX_MCP_TRANSPORT=http
       - PORT=3000
       - CORS_ORIGIN=*
       - NODE_ENV=production
@@ -29,7 +29,7 @@ services:
       target: build
     container_name: mcp-server-starter-dev
     environment:
-      - STARTER_TRANSPORT=http
+      - APIFOX_MCP_TRANSPORT=http
       - PORT=3001
       - CORS_ORIGIN=*
       - NODE_ENV=development

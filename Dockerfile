@@ -17,7 +17,7 @@ WORKDIR /app
 
 # Set production environment
 ENV NODE_ENV=production
-ENV STARTER_TRANSPORT=http
+ENV APIFOX_MCP_TRANSPORT=http
 ENV PORT=3000
 
 # Copy built files and production dependencies

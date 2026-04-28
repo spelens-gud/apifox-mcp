@@ -162,7 +162,7 @@ Configure the server behavior using environment variables:
 
 | Variable | Description | Default |
 |----------|-------------|---------|
-| `STARTER_TRANSPORT` | Transport mode: `stdio` or `http` | `stdio` |
+| `APIFOX_MCP_TRANSPORT` | Transport mode: `stdio` or `http` | `stdio` |
 | `PORT` | HTTP server port (HTTP mode only) | `3000` |
 | `CORS_ORIGIN` | CORS allowed origins (HTTP mode only) | `*` |
 
