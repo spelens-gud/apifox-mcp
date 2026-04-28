@@ -35,7 +35,7 @@ export function patchRequestParameter(
     in: input.location,
     ...(input.required === undefined ? {} : { required: input.required }),
     ...(input.description === undefined ? {} : { description: input.description }),
-    schema: input.schema,
+    schema: structuredClone(input.schema),
   };
 
   if (existing !== undefined) {

@@ -51,6 +51,89 @@ describe("OpenAPI request parameter patching", () => {
     });
   });
 
+  it("preserves existing parameter extension fields when updating schema and description", () => {
+    const document = structuredClone(petstoreOpenApi);
+    const parameters = document.paths["/pets"]?.get?.parameters ?? [];
+    const limit = parameters.find((parameter) => parameter.name === "limit" && parameter.in === "query");
+
+    assert.ok(limit);
+    Object.assign(limit, {
+      examples: {
+        small: { value: 5 },
+      },
+      deprecated: true,
+      style: "form",
+      explode: false,
+    });
+
+    patchRequestParameter(document, {
+      path: "/pets",
+      method: "get",
+      name: "limit",
+      location: "query",
+      schema: { type: "integer", default: 25 },
+      description: "Updated max items",
+    });
+
+    assert.deepEqual(parameters.find((parameter) => parameter.name === "limit" && parameter.in === "query"), {
+      name: "limit",
+      in: "query",
+      description: "Updated max items",
+      schema: { type: "integer", default: 25 },
+      examples: {
+        small: { value: 5 },
+      },
+      deprecated: true,
+      style: "form",
+      explode: false,
+    });
+  });
+
+  it("clones schema input when adding a parameter", () => {
+    const document = structuredClone(petstoreOpenApi);
+    const schemaInput = { type: "integer", default: 1 };
+
+    patchRequestParameter(document, {
+      path: "/pets",
+      method: "get",
+      name: "page",
+      location: "query",
+      schema: schemaInput,
+    });
+
+    schemaInput.default = 99;
+
+    assert.deepEqual(document.paths["/pets"]?.get?.parameters?.at(-1)?.schema, {
+      type: "integer",
+      default: 1,
+    });
+  });
+
+  it("clones schema input when updating a parameter", () => {
+    const document = structuredClone(petstoreOpenApi);
+    const schemaInput = { type: "integer", default: 20 };
+
+    patchRequestParameter(document, {
+      path: "/pets",
+      method: "get",
+      name: "limit",
+      location: "query",
+      schema: schemaInput,
+    });
+
+    schemaInput.default = 99;
+
+    assert.deepEqual(
+      document.paths["/pets"]?.get?.parameters?.find(
+        (parameter) => parameter.name === "limit" && parameter.in === "query",
+      )?.schema,
+      {
+        type: "integer",
+        default: 20,
+      },
+    );
+  });
+
   it("rejects a missing target operation", () => {
     const document = structuredClone(petstoreOpenApi);
 
