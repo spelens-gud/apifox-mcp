@@ -20,8 +20,25 @@ describe("readApifoxConfig", () => {
     assert.equal(config.timeoutMs, 3000);
   });
 
-  it("reports missing access token only when required", () => {
+  it("uses default API base URL for blank env value", () => {
+    const config = readApifoxConfig({ APIFOX_API_BASE_URL: "   " });
+    assert.equal(config.apiBaseUrl, "https://api.apifox.com");
+  });
+
+  it("reports missing token and required project id", () => {
     const config = readApifoxConfig({});
+    assert.deepEqual(config.missingForRequest({ requireProjectId: true }), [
+      "APIFOX_ACCESS_TOKEN",
+      "APIFOX_PROJECT_ID",
+    ]);
+  });
+
+  it("reports blank token and project id as missing", () => {
+    const config = readApifoxConfig({
+      APIFOX_ACCESS_TOKEN: "   ",
+      APIFOX_PROJECT_ID: "   ",
+    });
+
     assert.deepEqual(config.missingForRequest({ requireProjectId: true }), [
       "APIFOX_ACCESS_TOKEN",
       "APIFOX_PROJECT_ID",
@@ -31,5 +48,12 @@ describe("readApifoxConfig", () => {
   it("uses explicit project id instead of env project id", () => {
     const config = readApifoxConfig({ APIFOX_ACCESS_TOKEN: "token-1" });
     assert.deepEqual(config.missingForRequest({ projectId: "abc", requireProjectId: true }), []);
+  });
+
+  it("does not allow blank explicit project id to satisfy required project id", () => {
+    const config = readApifoxConfig({ APIFOX_ACCESS_TOKEN: "token-1" });
+    assert.deepEqual(config.missingForRequest({ projectId: "   ", requireProjectId: true }), [
+      "APIFOX_PROJECT_ID",
+    ]);
   });
 });
