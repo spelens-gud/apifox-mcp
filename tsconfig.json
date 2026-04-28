@@ -13,7 +13,6 @@
     "moduleDetection": "force",
     "isolatedModules": true,
     "verbatimModuleSyntax": true,
-    "rewriteRelativeImportExtensions": true,
 
     // Strictness
     "strict": true,

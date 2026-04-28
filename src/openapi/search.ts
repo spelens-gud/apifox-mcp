@@ -1,4 +1,4 @@
-import { HTTP_METHODS, type HttpMethod, type OpenApiDocument, type OpenApiOperation } from "./types.ts";
+import { HTTP_METHODS, type HttpMethod, type OpenApiDocument, type OpenApiOperation } from "./types.js";
 
 export interface EndpointSearchInput {
   path?: string;
