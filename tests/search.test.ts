@@ -1,25 +1,7 @@
 import assert from "node:assert/strict";
-import { registerHooks } from "node:module";
 import { describe, it } from "node:test";
+import { findOperation, listMethodsForPath, searchEndpoints } from "../src/openapi/search.ts";
 import { petstoreOpenApi } from "./fixtures/petstore-openapi.ts";
-
-const searchModuleUrl = new URL("../src/openapi/search.ts", import.meta.url).href;
-const typesModuleUrl = new URL("../src/openapi/types.ts", import.meta.url).href;
-
-registerHooks({
-  resolve(specifier, context, nextResolve) {
-    if (specifier === "./types.js" && context.parentURL === searchModuleUrl) {
-      return {
-        shortCircuit: true,
-        url: typesModuleUrl,
-      };
-    }
-
-    return nextResolve(specifier, context);
-  },
-});
-
-const { findOperation, listMethodsForPath, searchEndpoints } = await import("../src/openapi/search.ts");
 
 describe("OpenAPI endpoint search", () => {
   it("returns only matching endpoint for path and method filters", () => {
@@ -36,12 +18,12 @@ describe("OpenAPI endpoint search", () => {
     ]);
   });
 
-  it("returns endpoints matching keyword by operation metadata", () => {
-    const results = searchEndpoints(petstoreOpenApi, { keyword: "user" });
+  it("returns endpoints matching keyword by operation metadata without path match", () => {
+    const results = searchEndpoints(petstoreOpenApi, { keyword: "LiSt" });
 
     assert.deepEqual(
       results.map((result) => result.operationId),
-      ["getUser"],
+      ["listPets"],
     );
   });
 
