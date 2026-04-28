@@ -1,13 +1,16 @@
 {
   "servers": {
-    "starter-stdio": {
+    "apifox-openapi-patch-stdio": {
       "type": "stdio",
       "command": "node",
       "args": [
         "./build/index.js"
-      ]
+      ],
+      "env": {
+        "APIFOX_MCP_TRANSPORT": "stdio"
+      }
     },
-    "starter-http": {
+    "apifox-openapi-patch-http": {
       "type": "http",
       "url": "http://localhost:3000/mcp"
     }

@@ -80,5 +80,5 @@ jobs:
       - name: Check for known vulnerabilities
         run: |
           npm list --depth=0 || true
-          echo "Checking for outdated packages..."
+          printf '%s\n' "Checking for outdated packages..."
           npm outdated || true

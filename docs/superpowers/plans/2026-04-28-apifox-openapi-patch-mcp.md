@@ -4,7 +4,7 @@
 
 **Goal:** Build a TypeScript MCP server that safely previews and applies precise OpenAPI patches to Apifox interfaces.
 
-**Architecture:** Start from `alexanderop/mcp-server-starter-ts`, keep its official MCP SDK transport and auto-registration system, and replace demo modules with Apifox-specific tools. Core logic lives in pure modules for config, Apifox API calls, OpenAPI search, patching, minimal document generation, diffing, and pending changes.
+**Architecture:** Start from `upstream TypeScript MCP template`, keep its official MCP SDK transport and auto-registration system, and replace demo modules with Apifox-specific tools. Core logic lives in pure modules for config, Apifox API calls, OpenAPI search, patching, minimal document generation, diffing, and pending changes.
 
 **Tech Stack:** Node.js 20.11+, TypeScript, `@modelcontextprotocol/sdk`, Zod, Express HTTP transport, Node `node:test`, ESLint.
 
@@ -13,7 +13,7 @@
 ## File Structure
 
 - Create/replace from template: `package.json`, `package-lock.json`, `tsconfig.json`, `tsconfig.eslint.json`, `eslint.config.mjs`, `dev.js`, `mcp.json`, `.nvmrc`, `Dockerfile`, `.dockerignore`, `docker-compose.yml`, `src/index.ts`, `src/server/boot.ts`, `src/registry/*`, `tests/helpers/*`
-- Delete template demos after import: `src/tools/echo.ts`, `src/resources/system-info.ts`, `src/resources/timestamp.ts`, `src/prompts/code-analyzer.ts`, `src/prompts/generate-readme.ts`, related tests
+- Delete template demos after import: `src/tools/demo-tool.ts`, `src/resources/system-info.ts`, `src/resources/timestamp.ts`, `src/prompts/code-analyzer.ts`, `src/prompts/generate-readme.ts`, related tests
 - Create: `src/config/apifox-config.ts` for environment parsing
 - Create: `src/apifox/apifox-client.ts` for OpenAPI import/export HTTP calls
 - Create: `src/apifox/types.ts` for Apifox request/response types
@@ -51,7 +51,7 @@ Run:
 
 ```bash
 tmp_dir="$(mktemp -d)"
-git clone --depth 1 https://github.com/alexanderop/mcp-server-starter-ts "$tmp_dir/template"
+git clone --depth 1 https://github.com/upstream TypeScript MCP template "$tmp_dir/template"
 rsync -a --exclude .git --exclude docs "$tmp_dir/template/" ./
 rm -rf "$tmp_dir"
 ```
@@ -131,7 +131,7 @@ const server = new McpServer({
 });
 ```
 
-Also change log lines from `MCP Server Starter` to `Apifox OpenAPI Patch MCP`.
+Also change log lines from `template server` to `Apifox OpenAPI Patch MCP`.
 
 - [ ] **Step 5: Run baseline verification**
 
@@ -1470,7 +1470,7 @@ describe("Apifox tools", () => {
       assert(names.includes("apifox_search_endpoints"));
       assert(names.includes("apifox_preview_request_param_change"));
       assert(names.includes("apifox_apply_change"));
-      assert(!names.includes("echo"));
+      assert(!names.includes("demo-tool"));
     });
   });
 
@@ -1732,8 +1732,8 @@ return jsonResponse({ discarded });
 Run:
 
 ```bash
-rm -f src/tools/echo.ts src/resources/system-info.ts src/resources/timestamp.ts src/prompts/code-analyzer.ts src/prompts/generate-readme.ts
-rm -f tests/echo.test.ts tests/system-info.test.ts tests/timestamp.test.ts tests/generate-readme.test.ts
+rm -f src/tools/demo-tool.ts src/resources/system-info.ts src/resources/timestamp.ts src/prompts/code-analyzer.ts src/prompts/generate-readme.ts
+rm -f related demo tests
 ```
 
 Expected: only Apifox tools remain registered.
@@ -1754,7 +1754,7 @@ Run:
 
 ```bash
 git add src/tools tests/tools.test.ts
-git rm --ignore-unmatch src/tools/echo.ts src/resources/system-info.ts src/resources/timestamp.ts src/prompts/code-analyzer.ts src/prompts/generate-readme.ts tests/echo.test.ts tests/system-info.test.ts tests/timestamp.test.ts tests/generate-readme.test.ts
+git rm --ignore-unmatch src/tools/demo-tool.ts src/resources/system-info.ts src/resources/timestamp.ts src/prompts/code-analyzer.ts src/prompts/generate-readme.ts related demo tests
 git commit -m "feat: register apifox mcp tools"
 ```
 

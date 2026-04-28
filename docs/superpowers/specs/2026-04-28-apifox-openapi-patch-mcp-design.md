@@ -8,7 +8,7 @@ This project will build a TypeScript MCP server that turns natural-language edit
 
 ## Template Baseline
 
-Use `alexanderop/mcp-server-starter-ts` as the project baseline.
+Use `upstream TypeScript MCP template` as the project baseline.
 
 Reasons:
 

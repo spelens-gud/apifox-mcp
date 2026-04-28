@@ -1,11 +1,11 @@
 version: "3.9"
 
 services:
-  mcp-server-starter:
+  apifox-openapi-patch-mcp:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: mcp-server-starter
+    container_name: apifox-openapi-patch-mcp
     environment:
       - APIFOX_MCP_TRANSPORT=http
       - PORT=3000
@@ -22,12 +22,12 @@ services:
       start_period: 5s
 
   # Optional: Add a development version with hot reload
-  mcp-server-starter-dev:
+  apifox-openapi-patch-mcp-dev:
     build:
       context: .
       dockerfile: Dockerfile
       target: build
-    container_name: mcp-server-starter-dev
+    container_name: apifox-openapi-patch-mcp-dev
     environment:
       - APIFOX_MCP_TRANSPORT=http
       - PORT=3001

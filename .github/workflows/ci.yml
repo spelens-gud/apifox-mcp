@@ -38,7 +38,7 @@ jobs:
         
       - name: Check build output
         run: |
-          echo "Checking if build was successful..."
+          printf '%s\n' "Checking if build was successful..."
           ls -la build/
           test -f build/index.js
 

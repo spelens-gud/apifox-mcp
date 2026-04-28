@@ -68,8 +68,8 @@ jobs:
       - name: Output image URL
         if: github.event_name != 'pull_request'
         run: |
-          echo "Docker image pushed to:"
-          echo "${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest"
-          echo ""
-          echo "To run the container:"
-          echo "docker run -p 3000:3000 ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest"
+          printf '%s\n' "Docker image pushed to:"
+          printf '%s\n' "${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest"
+          printf '\n'
+          printf '%s\n' "To run the container:"
+          printf '%s\n' "docker run -p 3000:3000 ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest"

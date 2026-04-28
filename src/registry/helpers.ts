@@ -98,7 +98,7 @@ export function formatRegistrationSummary(successful: number, failed: number): s
  * Formats module information for logging
  * @param moduleType - The type of module (e.g., "tools")
  * @param moduleName - The name of the module
- * @returns Formatted string like "tools/echo"
+ * @returns Formatted string like "tools/module-name"
  */
 export function formatModuleInfo(moduleType: string, moduleName: string): string {
   return `${moduleType}/${moduleName}`;

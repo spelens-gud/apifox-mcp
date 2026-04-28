@@ -10,7 +10,7 @@ import { StdioClientTransport } from "@modelcontextprotocol/sdk/client/stdio.js"
 import { spawn } from "child_process";
 
 /**
- * Example: Creating an MCP client and calling tools
+ * Example: Creating an MCP client and inspecting advertised capabilities.
  */
 async function connectToMCPServer(): Promise<void> {
   // Spawn the MCP server process
@@ -37,28 +37,7 @@ async function connectToMCPServer(): Promise<void> {
     const tools = await client.listTools();
     console.log("Available tools:", tools);
 
-    // Call the echo tool
-    const echoResult = await client.callTool("echo", {
-      text: "Hello from MCP client!",
-    });
-    console.log("Echo result:", echoResult);
-
-    // Get a resource
-    const systemInfo = await client.getResource("system://info");
-    console.log("System info:", JSON.parse(systemInfo.contents[0].text));
-
-    // Get a timestamp in different formats
-    const isoTimestamp = await client.getResource("timestamp://iso");
-    console.log("ISO timestamp:", isoTimestamp.contents[0].text);
-
-    // Use a prompt
-    const prompt = await client.getPrompt("code-analyzer", {
-      code: "function add(a, b) { return a + b }",
-      language: "javascript",
-      analysisType: "all",
-      verbose: "no",
-    });
-    console.log("Analysis prompt generated:", prompt);
+    // Business tools, resources, and prompts are added in later tasks.
 
   } finally {
     // Clean up
