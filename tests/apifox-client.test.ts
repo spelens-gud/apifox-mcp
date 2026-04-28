@@ -28,6 +28,7 @@ describe("createApifoxClient", () => {
     });
 
     assert.equal(calls[0]?.url, "https://api.example.com/v1/projects/p1/export-openapi");
+    assert.equal(calls[0]?.init.method, "POST");
     assert.equal((calls[0]?.init.headers as Record<string, string>).Authorization, "Bearer token-1");
     assert.deepEqual(JSON.parse(String(calls[0]?.init.body)), {
       scope: { type: "ALL" },
@@ -61,6 +62,7 @@ describe("createApifoxClient", () => {
     });
 
     assert.equal(calls[0]?.url, "https://api.example.com/v1/projects/p1/import-openapi");
+    assert.equal(calls[0]?.init.method, "POST");
     assert.deepEqual(JSON.parse(String(calls[0]?.init.body)), {
       input: "{\"openapi\":\"3.1.0\",\"info\":{\"title\":\"x\",\"version\":\"1\"},\"paths\":{}}",
       options: {
