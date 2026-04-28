@@ -90,7 +90,10 @@ function patchField(
   };
 
   if (input.required === true) {
-    current.required = [leaf];
+    current.required ??= [];
+    if (!current.required.includes(leaf)) {
+      current.required.push(leaf);
+    }
   }
 
   return { action };

@@ -18,7 +18,7 @@ describe("OpenAPI schema field patching", () => {
 
     assert.deepEqual(result, { action: "added" });
     assert.equal(document.components?.schemas?.Pet?.properties?.age?.type, "integer");
-    assert.deepEqual(document.components?.schemas?.Pet?.required, ["age"]);
+    assert.deepEqual(document.components?.schemas?.Pet?.required, ["id", "name", "age"]);
   });
 
   it("adds a nested response field", () => {
@@ -52,5 +52,29 @@ describe("OpenAPI schema field patching", () => {
 
     assert.deepEqual(result, { action: "updated" });
     assert.equal(document.components?.schemas?.Pet?.properties?.name?.description, "Display name");
+  });
+
+  it("does not duplicate required fields", () => {
+    const document = structuredClone(petstoreOpenApi);
+
+    patchRequestBodyField(document, {
+      path: "/pets",
+      method: "post",
+      contentType: "application/json",
+      fieldPath: "name",
+      schema: { type: "string", description: "Display name" },
+      required: true,
+    });
+
+    patchRequestBodyField(document, {
+      path: "/pets",
+      method: "post",
+      contentType: "application/json",
+      fieldPath: "name",
+      schema: { type: "string", description: "Public display name" },
+      required: true,
+    });
+
+    assert.deepEqual(document.components?.schemas?.Pet?.required, ["id", "name"]);
   });
 });
