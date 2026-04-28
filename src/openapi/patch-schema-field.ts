@@ -59,12 +59,9 @@ function patchField(
   input: FieldPatchInput,
 ): FieldPatchResult {
   const targetSchema = resolvePatchTarget(document, rootSchema);
-  const parts = input.fieldPath.split(".").filter((part) => part.length > 0);
-  if (parts.length === 0) {
-    throw new Error("Field path must not be empty");
-  }
+  const parts = parseFieldPath(input.fieldPath);
 
-  let current = ensureObjectSchema(targetSchema);
+  let current = ensureObjectSchema(targetSchema, "root schema");
   for (const part of parts.slice(0, -1)) {
     let next = current.properties[part];
     if (next === undefined) {
@@ -75,7 +72,7 @@ function patchField(
       current.properties[part] = next;
     }
 
-    current = ensureObjectSchema(next);
+    current = ensureObjectSchema(next, `field path segment "${part}"`);
   }
 
   const leaf = parts.at(-1);
@@ -97,6 +94,14 @@ function patchField(
   }
 
   return { action };
+}
+
+function parseFieldPath(fieldPath: string): string[] {
+  if (fieldPath.length === 0 || fieldPath.startsWith(".") || fieldPath.endsWith(".") || fieldPath.includes("..")) {
+    throw new Error(`Invalid field path: ${fieldPath}`);
+  }
+
+  return fieldPath.split(".");
 }
 
 function resolvePatchTarget(
@@ -122,13 +127,44 @@ function parseComponentSchemaRef(ref: string): string {
     throw new Error(`Unsupported schema ref: ${ref}`);
   }
 
-  return decodeURIComponent(ref.slice(prefix.length));
+  const encodedName = ref.slice(prefix.length);
+  if (encodedName.includes("/")) {
+    throw new Error(`Unsupported schema ref: ${ref}`);
+  }
+
+  let decodedName: string;
+  try {
+    decodedName = decodeURIComponent(encodedName);
+  } catch (error) {
+    throw new Error(`Unsupported schema ref: ${ref}`, { cause: error });
+  }
+
+  return unescapeJsonPointerSegment(decodedName, ref);
 }
 
-function ensureObjectSchema(schema: JsonSchemaObject): JsonSchemaObject & {
+function unescapeJsonPointerSegment(segment: string, ref: string): string {
+  const invalidEscape = /~(?![01])/.exec(segment);
+  if (invalidEscape !== null) {
+    throw new Error(`Unsupported schema ref: ${ref}`);
+  }
+
+  return segment.replaceAll("~1", "/").replaceAll("~0", "~");
+}
+
+function ensureObjectSchema(
+  schema: JsonSchemaObject,
+  context: string,
+): JsonSchemaObject & {
   properties: Record<string, JsonSchemaObject>;
 } {
-  schema.type = "object";
+  if (schema.type !== undefined && schema.type !== "object") {
+    throw new Error(`Expected object schema at ${context}, got ${schema.type}`);
+  }
+
+  if (schema.type === undefined && schema.properties === undefined) {
+    schema.type = "object";
+  }
+
   schema.properties ??= {};
   return schema as JsonSchemaObject & { properties: Record<string, JsonSchemaObject> };
 }
