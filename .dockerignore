@@ -31,6 +31,7 @@ yarn.lock
 *.md
 
 # IDE files
+.vscode/
 .idea/
 *.swp
 *.swo

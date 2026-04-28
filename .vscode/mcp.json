@@ -10,10 +10,7 @@
     },
     "apifox-openapi-patch-http": {
       "type": "http",
-      "url": "http://localhost:3000/mcp",
-      "headers": {
-        "x-mcp-session": "vscode-session"
-      }
+      "url": "http://localhost:3000/mcp"
     }
   }
 }

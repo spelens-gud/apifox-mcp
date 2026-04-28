@@ -4,7 +4,7 @@ import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js"
 import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
 import cors from "cors";
 import { config } from "dotenv";
-import express from "express";
+import express, { type Request, type Response } from "express";
 import { autoRegisterModules } from "../registry/auto-loader.js";
 
 type TransportMode = "stdio" | "http";
@@ -45,9 +45,19 @@ export async function boot(
     origin: corsOrigin,
     credentials: true,
     methods: ["GET", "POST", "OPTIONS", "DELETE"],
-    allowedHeaders: ["Content-Type", "x-mcp-session", "x-mcp-session-id"],
-    exposedHeaders: ["x-mcp-session-id"]
+    allowedHeaders: [
+      "Content-Type",
+      "mcp-session-id",
+      "mcp-protocol-version",
+      "x-mcp-session",
+      "x-mcp-session-id",
+    ],
+    exposedHeaders: ["mcp-session-id", "x-mcp-session-id"]
   }));
+
+  app.get("/health", (_req: Request, res: Response) => {
+    res.status(200).json({ ok: true });
+  });
 
   // Create transport with session support
   const transport = new StreamableHTTPServerTransport({
@@ -57,7 +67,7 @@ export async function boot(
   await server.connect(transport);
 
   // Handle all MCP requests (GET for SSE, POST for JSON-RPC, DELETE for cleanup)
-  app.all("/mcp", (req, res) => {
+  app.all("/mcp", (req: Request, res: Response) => {
     void transport.handleRequest(req, res, req.body);
   });
 
