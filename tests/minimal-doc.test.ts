@@ -193,6 +193,39 @@ describe("OpenAPI minimal document generation", () => {
     );
   });
 
+  it("rejects dangerous component sections without polluting Object.prototype", () => {
+    const document: OpenApiDocument = JSON.parse(JSON.stringify({
+      openapi: "3.0.3",
+      info: {
+        title: "Unsafe component section",
+        version: "1.0.0",
+      },
+      paths: {
+        "/pets": {
+          get: {
+            parameters: [{ $ref: "#/components/__proto__/polluted" }],
+            responses: {},
+          },
+        },
+      },
+      components: {
+        __proto__: {
+          polluted: {
+            name: "polluted",
+            in: "query",
+            schema: { type: "string" },
+          },
+        },
+      },
+    }));
+
+    assert.throws(
+      () => buildMinimalDocument(document, "/pets", "get"),
+      /Unsupported component ref: #\/components\/__proto__\/polluted/,
+    );
+    assert.equal((Object.prototype as Record<string, unknown>).polluted, undefined);
+  });
+
   it("collects cyclic refs without looping forever", () => {
     const document: OpenApiDocument = {
       openapi: "3.0.3",

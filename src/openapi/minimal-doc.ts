@@ -3,6 +3,18 @@ import type { HttpMethod, JsonSchemaObject, OpenApiDocument } from "./types.js";
 
 const componentRefPrefix = "#/components/";
 const unsafeComponentNames = new Set(["__proto__", "constructor", "prototype"]);
+const supportedComponentSections = new Set([
+  "callbacks",
+  "examples",
+  "headers",
+  "links",
+  "parameters",
+  "pathItems",
+  "requestBodies",
+  "responses",
+  "schemas",
+  "securitySchemes",
+]);
 
 export function buildMinimalDocument(
   document: OpenApiDocument,
@@ -102,7 +114,11 @@ function collectComponentRefsInto(value: unknown, refs: Map<string, ComponentRef
 function parseComponentRef(ref: string): ComponentRef {
   const rest = ref.slice(componentRefPrefix.length);
   const [section, ...nameParts] = rest.split("/");
-  if (section === undefined || section === "" || nameParts.length !== 1) {
+  if (
+    section === undefined ||
+    !supportedComponentSections.has(section) ||
+    nameParts.length !== 1
+  ) {
     throw new Error(`Unsupported component ref: ${ref}`);
   }
 
