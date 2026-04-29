@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 import { createJsonDiff } from "../build/openapi/diff.js";
 import { buildMinimalDocument } from "../build/openapi/minimal-doc.js";
-import { collectSchemaRefs } from "../build/openapi/ref-collector.js";
+import { collectSchemaClosure, collectSchemaRefs } from "../build/openapi/ref-collector.js";
 import type { OpenApiDocument } from "../src/openapi/types.ts";
 import { petstoreOpenApi } from "./fixtures/petstore-openapi.ts";
 
@@ -25,6 +25,17 @@ describe("OpenAPI minimal document generation", () => {
 +++ after
 -  "b": 2
 +  "b": 3`,
+    );
+  });
+
+  it("omits unchanged trailing lines from JSON line diff insertions", () => {
+    const diff = createJsonDiff({ a: 1, z: 9 }, { a: 1, b: 2, z: 9 });
+
+    assert.equal(
+      diff,
+      `--- before
++++ after
++  "b": 2,`,
     );
   });
 
@@ -104,5 +115,70 @@ describe("OpenAPI minimal document generation", () => {
     });
 
     assert.deepEqual(collectSchemaRefs(schema), []);
+  });
+
+  it("does not resolve dangerous schema refs from inherited object properties", () => {
+    const document: OpenApiDocument = {
+      openapi: "3.0.3",
+      info: {
+        title: "Unsafe",
+        version: "1.0.0",
+      },
+      paths: {},
+      components: {
+        schemas: {},
+      },
+    };
+
+    assert.throws(
+      () => collectSchemaClosure(document, { $ref: "#/components/schemas/constructor" }),
+      /Unsupported schema ref|Schema ref not found/,
+    );
+  });
+
+  it("collects cyclic refs without looping forever", () => {
+    const document: OpenApiDocument = {
+      openapi: "3.0.3",
+      info: {
+        title: "Cyclic",
+        version: "1.0.0",
+      },
+      paths: {},
+      components: {
+        schemas: {
+          A: {
+            type: "object",
+            properties: {
+              b: { $ref: "#/components/schemas/B" },
+            },
+          },
+          B: {
+            type: "object",
+            properties: {
+              a: { $ref: "#/components/schemas/A" },
+            },
+          },
+        },
+      },
+    };
+
+    const collected = collectSchemaClosure(document, { $ref: "#/components/schemas/A" });
+
+    assert.deepEqual(Object.keys(collected), ["A", "B"]);
+    assert.deepEqual(collected.A, document.components?.schemas?.A);
+    assert.deepEqual(collected.B, document.components?.schemas?.B);
+  });
+
+  it("rejects raw slash, encoded slash, and invalid escape schema refs while collecting", () => {
+    for (const ref of [
+      "#/components/schemas/A/B",
+      "#/components/schemas/A%2FB",
+      "#/components/schemas/A~2B",
+    ]) {
+      assert.throws(
+        () => collectSchemaRefs({ $ref: ref }),
+        /Unsupported schema ref/,
+      );
+    }
   });
 });

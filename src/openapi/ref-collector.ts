@@ -1,6 +1,7 @@
 import type { OpenApiDocument } from "./types.js";
 
 const COMPONENT_SCHEMA_REF_PREFIX = "#/components/schemas/";
+const UNSAFE_COMPONENT_NAMES = new Set(["__proto__", "constructor", "prototype"]);
 
 export function collectSchemaRefs(value: unknown): string[] {
   const refs = new Set<string>();
@@ -9,9 +10,10 @@ export function collectSchemaRefs(value: unknown): string[] {
 }
 
 export function collectSchemaClosure(document: OpenApiDocument, root: unknown): Record<string, unknown> {
-  const collectedSchemas: Record<string, unknown> = {};
+  const collectedSchemas = new Map<string, unknown>();
   const visitedNames = new Set<string>();
   const pendingRefs = collectSchemaRefs(root);
+  const schemas = document.components?.schemas;
 
   while (pendingRefs.length > 0) {
     const ref = pendingRefs.shift();
@@ -24,13 +26,13 @@ export function collectSchemaClosure(document: OpenApiDocument, root: unknown): 
       continue;
     }
 
-    const schema = document.components?.schemas?.[name];
-    if (schema === undefined) {
+    if (!isRecord(schemas) || !hasOwnProperty(schemas, name)) {
       throw new Error(`Schema ref not found: ${name}`);
     }
 
+    const schema = schemas[name];
     visitedNames.add(name);
-    collectedSchemas[name] = structuredClone(schema);
+    collectedSchemas.set(name, structuredClone(schema));
 
     for (const nestedRef of collectSchemaRefs(schema)) {
       pendingRefs.push(nestedRef);
@@ -39,7 +41,12 @@ export function collectSchemaClosure(document: OpenApiDocument, root: unknown): 
     pendingRefs.sort();
   }
 
-  return Object.fromEntries(Object.entries(collectedSchemas).sort(([left], [right]) => left.localeCompare(right)));
+  const sortedSchemas: Record<string, unknown> = {};
+  for (const [name, schema] of [...collectedSchemas.entries()].sort(([left], [right]) => left.localeCompare(right))) {
+    sortedSchemas[name] = schema;
+  }
+
+  return sortedSchemas;
 }
 
 function collectSchemaRefsInto(value: unknown, refs: Set<string>): void {
@@ -87,7 +94,12 @@ function parseComponentSchemaRef(ref: string): string {
     throw new Error(`Unsupported schema ref: ${ref}`);
   }
 
-  return unescapeJsonPointerSegment(decodedName, ref);
+  const name = unescapeJsonPointerSegment(decodedName, ref);
+  if (UNSAFE_COMPONENT_NAMES.has(name)) {
+    throw new Error(`Unsupported schema ref: ${ref}`);
+  }
+
+  return name;
 }
 
 function unescapeJsonPointerSegment(segment: string, ref: string): string {
@@ -101,4 +113,11 @@ function unescapeJsonPointerSegment(segment: string, ref: string): string {
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null;
+}
+
+function hasOwnProperty<T extends object>(
+  object: T,
+  key: PropertyKey,
+): key is keyof T {
+  return Object.hasOwn(object, key);
 }
