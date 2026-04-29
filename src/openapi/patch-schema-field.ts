@@ -63,7 +63,7 @@ function patchField(
 
   let current = ensureObjectSchema(targetSchema, "root schema");
   for (const part of parts.slice(0, -1)) {
-    let next = current.properties[part];
+    let next = hasOwnProperty(current.properties, part) ? current.properties[part] : undefined;
     if (next === undefined) {
       next = {
         type: "object",
@@ -80,9 +80,10 @@ function patchField(
     throw new Error("Field path must not be empty");
   }
 
-  const action: FieldPatchResult["action"] = current.properties[leaf] === undefined ? "added" : "updated";
+  const existingLeaf = hasOwnProperty(current.properties, leaf) ? current.properties[leaf] : undefined;
+  const action: FieldPatchResult["action"] = existingLeaf === undefined ? "added" : "updated";
   current.properties[leaf] = {
-    ...(current.properties[leaf] ?? {}),
+    ...(existingLeaf ?? {}),
     ...structuredClone(input.schema),
   };
 
@@ -101,7 +102,14 @@ function parseFieldPath(fieldPath: string): string[] {
     throw new Error(`Invalid field path: ${fieldPath}`);
   }
 
-  return fieldPath.split(".");
+  const parts = fieldPath.split(".");
+  for (const part of parts) {
+    if (isDangerousObjectKey(part)) {
+      throw new Error(`Invalid field path: ${fieldPath}; dangerous segment: ${part}`);
+    }
+  }
+
+  return parts;
 }
 
 function resolvePatchTarget(
@@ -139,6 +147,10 @@ function parseComponentSchemaRef(ref: string): string {
     throw new Error(`Unsupported schema ref: ${ref}`, { cause: error });
   }
 
+  if (decodedName.includes("/")) {
+    throw new Error(`Unsupported schema ref: ${ref}`);
+  }
+
   return unescapeJsonPointerSegment(decodedName, ref);
 }
 
@@ -167,4 +179,15 @@ function ensureObjectSchema(
 
   schema.properties ??= {};
   return schema as JsonSchemaObject & { properties: Record<string, JsonSchemaObject> };
+}
+
+function isDangerousObjectKey(segment: string): boolean {
+  return segment === "__proto__" || segment === "prototype" || segment === "constructor";
+}
+
+function hasOwnProperty<T extends object>(
+  object: T,
+  key: PropertyKey,
+): boolean {
+  return Object.hasOwn(object, key);
 }

@@ -96,6 +96,54 @@ describe("OpenAPI schema field patching", () => {
     }
   });
 
+  it("rejects dangerous field path segments without polluting Object.prototype", () => {
+    for (const fieldPath of ["__proto__.score", "constructor.score", "prototype.score"]) {
+      const document = structuredClone(petstoreOpenApi);
+
+      assert.throws(
+        () =>
+          patchRequestBodyField(document, {
+            path: "/pets",
+            method: "post",
+            contentType: "application/json",
+            fieldPath,
+            schema: { type: "integer" },
+          }),
+        new RegExp(`Invalid field path: ${fieldPath.replaceAll(".", "\\.")}; dangerous segment: ${fieldPath.split(".")[0]}`),
+      );
+      assert.equal((Object.prototype as Record<string, unknown>).score, undefined);
+    }
+  });
+
+  it("does not read or reuse inherited properties while patching", () => {
+    const document = structuredClone(petstoreOpenApi);
+    const inheritedProfile = {
+      type: "object",
+      properties: {
+        inheritedScore: { type: "string" },
+      },
+    };
+    const properties = Object.create({ profile: inheritedProfile }) as Record<string, unknown>;
+    properties.id = document.components!.schemas!.Pet!.properties!.id;
+    properties.name = document.components!.schemas!.Pet!.properties!.name;
+    document.components!.schemas!.Pet!.properties = properties;
+
+    const result = patchRequestBodyField(document, {
+      path: "/pets",
+      method: "post",
+      contentType: "application/json",
+      fieldPath: "profile.score",
+      schema: { type: "number" },
+    });
+
+    assert.deepEqual(result, { action: "added" });
+    assert.equal(Object.hasOwn(properties, "profile"), true);
+    assert.notEqual(properties.profile, inheritedProfile);
+    assert.equal(document.components?.schemas?.Pet?.properties?.profile?.properties?.score?.type, "number");
+    assert.equal(inheritedProfile.properties.inheritedScore.type, "string");
+    assert.equal((Object.prototype as Record<string, unknown>).score, undefined);
+  });
+
   it("patches inline request body schemas", () => {
     const document = structuredClone(petstoreOpenApi);
     const inlineSchema = {
@@ -151,6 +199,23 @@ describe("OpenAPI schema field patching", () => {
           schema: { type: "integer" },
         }),
       /Unsupported schema ref: #\/components\/schemas\/Pet\/Extra/,
+    );
+
+    const encodedSlashRefDocument = structuredClone(petstoreOpenApi);
+    encodedSlashRefDocument.paths["/pets"]!.post!.requestBody!.content!["application/json"]!.schema = {
+      $ref: "#/components/schemas/Pet%2FProfile",
+    };
+
+    assert.throws(
+      () =>
+        patchRequestBodyField(encodedSlashRefDocument, {
+          path: "/pets",
+          method: "post",
+          contentType: "application/json",
+          fieldPath: "age",
+          schema: { type: "integer" },
+        }),
+      /Unsupported schema ref: #\/components\/schemas\/Pet%2FProfile/,
     );
 
     const missingRefDocument = structuredClone(petstoreOpenApi);
