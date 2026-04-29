@@ -54,15 +54,14 @@ function collectSchemaRefsInto(value: unknown, refs: Set<string>): void {
     return;
   }
 
-  if (Object.hasOwn(value, "$ref")) {
-    const ref = value.$ref;
-    if (typeof ref === "string" && ref.startsWith(COMPONENT_SCHEMA_REF_PREFIX)) {
-      parseComponentSchemaRef(ref);
-      refs.add(ref);
+  for (const [key, item] of Object.entries(value)) {
+    if (key === "$ref") {
+      const ref = item;
+      if (typeof ref === "string" && ref.startsWith(COMPONENT_SCHEMA_REF_PREFIX)) {
+        parseComponentSchemaRef(ref);
+        refs.add(ref);
+      }
     }
-  }
-
-  for (const item of Object.values(value)) {
     collectSchemaRefsInto(item, refs);
   }
 }

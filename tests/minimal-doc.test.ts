@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 import { createJsonDiff } from "../build/openapi/diff.js";
 import { buildMinimalDocument } from "../build/openapi/minimal-doc.js";
+import { collectSchemaRefs } from "../build/openapi/ref-collector.js";
 import type { OpenApiDocument } from "../src/openapi/types.ts";
 import { petstoreOpenApi } from "./fixtures/petstore-openapi.ts";
 
@@ -93,5 +94,15 @@ describe("OpenAPI minimal document generation", () => {
       () => buildMinimalDocument(document, "/pets", "post"),
       /Schema ref not found: Missing/,
     );
+  });
+
+  it("ignores non-enumerable refs", () => {
+    const schema = {};
+    Object.defineProperty(schema, "$ref", {
+      value: "#/components/schemas/Hidden",
+      enumerable: false,
+    });
+
+    assert.deepEqual(collectSchemaRefs(schema), []);
   });
 });
