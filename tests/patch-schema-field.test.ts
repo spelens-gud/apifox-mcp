@@ -78,6 +78,21 @@ describe("OpenAPI schema field patching", () => {
     assert.deepEqual(document.components?.schemas?.Pet?.required, ["id", "name"]);
   });
 
+  it("removes an existing required field when required is false", () => {
+    const document = structuredClone(petstoreOpenApi);
+
+    patchRequestBodyField(document, {
+      path: "/pets",
+      method: "post",
+      contentType: "application/json",
+      fieldPath: "name",
+      schema: { type: "string", description: "Optional display name" },
+      required: false,
+    });
+
+    assert.deepEqual(document.components?.schemas?.Pet?.required, ["id"]);
+  });
+
   it("rejects malformed field paths", () => {
     for (const fieldPath of [".age", "age.", "profile..score"]) {
       const document = structuredClone(petstoreOpenApi);
@@ -234,6 +249,24 @@ describe("OpenAPI schema field patching", () => {
         }),
       /Referenced schema not found: #\/components\/schemas\/Missing/,
     );
+
+    const dangerousRefDocument = structuredClone(petstoreOpenApi);
+    dangerousRefDocument.paths["/pets"]!.post!.requestBody!.content!["application/json"]!.schema = {
+      $ref: "#/components/schemas/__proto__",
+    };
+
+    assert.throws(
+      () =>
+        patchRequestBodyField(dangerousRefDocument, {
+          path: "/pets",
+          method: "post",
+          contentType: "application/json",
+          fieldPath: "age",
+          schema: { type: "integer" },
+        }),
+      /Unsupported schema ref: #\/components\/schemas\/__proto__/,
+    );
+    assert.equal((Object.prototype as Record<string, unknown>).age, undefined);
   });
 
   it("resolves JSON Pointer escaped component schema refs", () => {
@@ -311,5 +344,28 @@ describe("OpenAPI schema field patching", () => {
     schema.properties.value.type = "number";
 
     assert.equal(document.components?.schemas?.Pet?.properties?.metadata?.properties?.value?.type, "string");
+  });
+
+  it("resolves intermediate schema refs while patching nested fields", () => {
+    const document = structuredClone(petstoreOpenApi);
+    document.components!.schemas!.Profile = {
+      type: "object",
+      properties: {},
+    };
+    document.components!.schemas!.User!.properties!.profile = {
+      $ref: "#/components/schemas/Profile",
+    };
+
+    patchResponseField(document, {
+      path: "/users/{userId}",
+      method: "get",
+      status: "200",
+      contentType: "application/json",
+      fieldPath: "profile.score",
+      schema: { type: "number" },
+    });
+
+    assert.equal(document.components?.schemas?.Profile?.properties?.score?.type, "number");
+    assert.deepEqual(document.components?.schemas?.User?.properties?.profile, { $ref: "#/components/schemas/Profile" });
   });
 });

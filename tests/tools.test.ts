@@ -173,4 +173,22 @@ describe("Apifox tools", () => {
       });
     });
   });
+
+  it("rejects preview schemas without an explicit type", async () => {
+    await withEmptyCwd(async (cwd) => {
+      await withTestClient(async (client) => {
+        await assert.rejects(
+          () =>
+            client.callTool("apifox_preview_request_param_change", {
+              path: "/pets",
+              method: "get",
+              location: "query",
+              name: "limit",
+              schema: {},
+            }),
+          /Invalid arguments/,
+        );
+      }, { cwd, env: createChildEnv() });
+    });
+  });
 });

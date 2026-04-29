@@ -31,6 +31,9 @@ Optional:
 - `APIFOX_MODULE_ID`
 - `APIFOX_TIMEOUT_MS`, defaults to `15000`
 - `APIFOX_MCP_TRANSPORT`, `stdio` or `http`, defaults to `stdio`
+- `APIFOX_MCP_HOST`, used by HTTP transport, defaults to `127.0.0.1`
+- `APIFOX_MCP_HTTP_BEARER_TOKEN`, enables bearer-token auth for HTTP transport
+- `CORS_ORIGIN`, used by HTTP transport, defaults to the local server origin
 - `PORT`, used by HTTP transport, defaults to `3000`
 
 ## Local Commands
@@ -46,6 +49,8 @@ HTTP transport:
 ```bash
 APIFOX_MCP_TRANSPORT=http PORT=3000 npm run serve:http
 ```
+
+HTTP mode binds to `127.0.0.1` by default. Set `APIFOX_MCP_HOST` explicitly if you need a different bind address, and set `APIFOX_MCP_HTTP_BEARER_TOKEN` before exposing HTTP mode beyond local development.
 
 Development checks:
 

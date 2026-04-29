@@ -10,7 +10,7 @@ import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 
 const methodSchema = z.enum(["get", "post", "put", "patch", "delete", "head", "options", "trace"]);
 const locationSchema = z.enum(["query", "path", "header", "cookie"]);
-const jsonSchemaSchema = z.object({}).passthrough() as z.ZodType<JsonSchemaObject>;
+const jsonSchemaSchema = z.object({ type: z.string().min(1) }).passthrough() as z.ZodType<JsonSchemaObject>;
 const description = "Preview an Apifox request parameter change and store it for later apply";
 
 const toolModule: RegisterableModule = {

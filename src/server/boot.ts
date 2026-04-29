@@ -16,6 +16,10 @@ export async function boot(
   mode?: TransportMode
 ): Promise<void> {
   const transportMode = mode ?? (process.env.APIFOX_MCP_TRANSPORT as TransportMode | undefined) ?? "stdio";
+  const port = Number(process.env.PORT ?? 3000);
+  const host = process.env.APIFOX_MCP_HOST ?? "127.0.0.1";
+  const corsOrigin = process.env.CORS_ORIGIN ?? `http://${host}:${String(port)}`;
+  const bearerToken = process.env.APIFOX_MCP_HTTP_BEARER_TOKEN;
   const server = new McpServer({
     name: "apifox-openapi-patch-mcp",
     version: "0.1.0",
@@ -40,7 +44,6 @@ export async function boot(
   const app = express();
   app.use(express.json({ limit: "1mb" }));
 
-  const corsOrigin = process.env.CORS_ORIGIN ?? "*";
   app.use(cors({ 
     origin: corsOrigin,
     credentials: true,
@@ -54,6 +57,17 @@ export async function boot(
     ],
     exposedHeaders: ["mcp-session-id", "x-mcp-session-id"]
   }));
+
+  if (bearerToken !== undefined && bearerToken.trim() !== "") {
+    app.use((req: Request, res: Response, next) => {
+      if (req.headers.authorization !== `Bearer ${bearerToken}`) {
+        res.status(401).json({ error: "Unauthorized" });
+        return;
+      }
+
+      next();
+    });
+  }
 
   app.get("/health", (_req: Request, res: Response) => {
     res.status(200).json({ ok: true });
@@ -71,12 +85,12 @@ export async function boot(
     void transport.handleRequest(req, res, req.body);
   });
 
-  const port = Number(process.env.PORT ?? 3000);
-  const httpServer = app.listen(port, () => {
-    console.log(`Apifox OpenAPI Patch MCP (HTTP) listening on http://localhost:${String(port)}/mcp`);
-    console.log(`SSE endpoint: GET http://localhost:${String(port)}/mcp`);
-    console.log(`JSON-RPC endpoint: POST http://localhost:${String(port)}/mcp`);
+  const httpServer = app.listen(port, host, () => {
+    console.log(`Apifox OpenAPI Patch MCP (HTTP) listening on http://${host}:${String(port)}/mcp`);
+    console.log(`SSE endpoint: GET http://${host}:${String(port)}/mcp`);
+    console.log(`JSON-RPC endpoint: POST http://${host}:${String(port)}/mcp`);
     console.log(`CORS origin: ${corsOrigin}`);
+    console.log(`HTTP bearer auth: ${bearerToken === undefined || bearerToken.trim() === "" ? "disabled" : "enabled"}`);
   });
 
   process.on("SIGINT", () => {

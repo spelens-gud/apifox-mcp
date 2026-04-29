@@ -9,7 +9,7 @@ import type { RegisterableModule } from "../registry/types.js";
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 
 const methodSchema = z.enum(["get", "post", "put", "patch", "delete", "head", "options", "trace"]);
-const jsonSchemaSchema = z.object({}).passthrough() as z.ZodType<JsonSchemaObject>;
+const jsonSchemaSchema = z.object({ type: z.string().min(1) }).passthrough() as z.ZodType<JsonSchemaObject>;
 const description = "Preview an Apifox response schema field change and store it for later apply";
 
 const toolModule: RegisterableModule = {

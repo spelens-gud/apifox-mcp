@@ -1,5 +1,7 @@
 import type { HttpMethod, JsonSchemaObject, OpenApiDocument } from "./types.js";
 
+const unsafeComponentNames = new Set(["__proto__", "constructor", "prototype"]);
+
 export type FieldPatchInput = {
   path: string;
   method: HttpMethod;
@@ -72,7 +74,7 @@ function patchField(
       current.properties[part] = next;
     }
 
-    current = ensureObjectSchema(next, `field path segment "${part}"`);
+    current = ensureObjectSchema(resolvePatchTarget(document, next), `field path segment "${part}"`);
   }
 
   const leaf = parts.at(-1);
@@ -80,21 +82,37 @@ function patchField(
     throw new Error("Field path must not be empty");
   }
 
-  const existingLeaf = hasOwnProperty(current.properties, leaf) ? current.properties[leaf] : undefined;
+  return applyLeafPatch(current, leaf, input);
+}
+
+function applyLeafPatch(
+  schema: JsonSchemaObject & { properties: Record<string, JsonSchemaObject> },
+  leaf: string,
+  input: FieldPatchInput,
+): FieldPatchResult {
+  const existingLeaf = hasOwnProperty(schema.properties, leaf) ? schema.properties[leaf] : undefined;
   const action: FieldPatchResult["action"] = existingLeaf === undefined ? "added" : "updated";
-  current.properties[leaf] = {
+  schema.properties[leaf] = {
     ...(existingLeaf ?? {}),
     ...structuredClone(input.schema),
   };
 
-  if (input.required === true) {
-    current.required ??= [];
-    if (!current.required.includes(leaf)) {
-      current.required.push(leaf);
+  updateRequiredFields(schema, leaf, input.required);
+  return { action };
+}
+
+function updateRequiredFields(schema: JsonSchemaObject, leaf: string, required: boolean | undefined): void {
+  if (required === true) {
+    schema.required ??= [];
+    if (!schema.required.includes(leaf)) {
+      schema.required.push(leaf);
     }
+    return;
   }
 
-  return { action };
+  if (required === false && schema.required !== undefined) {
+    schema.required = schema.required.filter((requiredField) => requiredField !== leaf);
+  }
 }
 
 function parseFieldPath(fieldPath: string): Array<string> {
@@ -121,7 +139,12 @@ function resolvePatchTarget(
   }
 
   const name = parseComponentSchemaRef(schema.$ref);
-  const target = document.components?.schemas?.[name];
+  const schemas = document.components?.schemas;
+  if (schemas === undefined || !hasOwnProperty(schemas, name)) {
+    throw new Error(`Referenced schema not found: ${schema.$ref}`);
+  }
+
+  const target = schemas[name];
   if (target === undefined) {
     throw new Error(`Referenced schema not found: ${schema.$ref}`);
   }
@@ -151,7 +174,12 @@ function parseComponentSchemaRef(ref: string): string {
     throw new Error(`Unsupported schema ref: ${ref}`);
   }
 
-  return unescapeJsonPointerSegment(decodedName, ref);
+  const name = unescapeJsonPointerSegment(decodedName, ref);
+  if (unsafeComponentNames.has(name)) {
+    throw new Error(`Unsupported schema ref: ${ref}`);
+  }
+
+  return name;
 }
 
 function unescapeJsonPointerSegment(segment: string, ref: string): string {

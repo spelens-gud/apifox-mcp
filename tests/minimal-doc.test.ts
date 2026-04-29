@@ -95,6 +95,63 @@ describe("OpenAPI minimal document generation", () => {
     assert.deepEqual(minimal.components?.schemas?.Category, document.components?.schemas?.Category);
   });
 
+  it("includes non-schema component refs used by the operation", () => {
+    const document: OpenApiDocument = {
+      openapi: "3.0.3",
+      info: {
+        title: "Shared parameters",
+        version: "1.0.0",
+      },
+      paths: {
+        "/pets": {
+          get: {
+            parameters: [{ $ref: "#/components/parameters/LimitParam" }],
+            responses: {
+              "200": {
+                $ref: "#/components/responses/PetList",
+              },
+            },
+          },
+        },
+      },
+      components: {
+        parameters: {
+          LimitParam: {
+            name: "limit",
+            in: "query",
+            schema: { type: "integer" },
+          },
+        },
+        responses: {
+          PetList: {
+            description: "A pet list",
+            content: {
+              "application/json": {
+                schema: {
+                  $ref: "#/components/schemas/Pet",
+                },
+              },
+            },
+          },
+        },
+        schemas: {
+          Pet: {
+            type: "object",
+            properties: {
+              id: { type: "string" },
+            },
+          },
+        },
+      },
+    };
+
+    const minimal = buildMinimalDocument(document, "/pets", "get");
+
+    assert.deepEqual(minimal.components?.parameters?.LimitParam, document.components?.parameters?.LimitParam);
+    assert.deepEqual(minimal.components?.responses?.PetList, document.components?.responses?.PetList);
+    assert.deepEqual(minimal.components?.schemas?.Pet, document.components?.schemas?.Pet);
+  });
+
   it("rejects missing schema refs with a clear error", () => {
     const document = structuredClone(petstoreOpenApi);
     document.paths["/pets"]!.post!.requestBody!.content!["application/json"]!.schema = {
