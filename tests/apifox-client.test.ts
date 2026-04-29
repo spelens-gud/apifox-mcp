@@ -31,6 +31,7 @@ describe("createApifoxClient", () => {
     assert.equal(calls[0]?.init.method, "POST");
     assert.equal((calls[0]?.init.headers as Record<string, string>).Authorization, "Bearer token-1");
     assert.equal((calls[0]?.init.headers as Record<string, string>)["Content-Type"], "application/json");
+    assert.equal((calls[0]?.init.headers as Record<string, string>)["X-Apifox-Api-Version"], "2024-03-28");
     assert.deepEqual(JSON.parse(String(calls[0]?.init.body)), {
       scope: { type: "ALL" },
       exportFormat: "JSON",
@@ -66,6 +67,7 @@ describe("createApifoxClient", () => {
     assert.equal(calls[0]?.init.method, "POST");
     assert.equal((calls[0]?.init.headers as Record<string, string>).Authorization, "Bearer token-1");
     assert.equal((calls[0]?.init.headers as Record<string, string>)["Content-Type"], "application/json");
+    assert.equal((calls[0]?.init.headers as Record<string, string>)["X-Apifox-Api-Version"], "2024-03-28");
     assert.deepEqual(JSON.parse(String(calls[0]?.init.body)), {
       input: "{\"openapi\":\"3.1.0\",\"info\":{\"title\":\"x\",\"version\":\"1\"},\"paths\":{}}",
       options: {

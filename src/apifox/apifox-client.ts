@@ -8,6 +8,8 @@ type ClientOptions = {
   fetchImpl?: typeof fetch;
 }
 
+const apifoxApiVersion = "2024-03-28";
+
 export type ApifoxClient = {
   exportOpenApi(input: ExportOpenApiInput): Promise<OpenApiDocument>;
   importOpenApi(input: ImportOpenApiInput): Promise<ImportOpenApiResult>;
@@ -37,6 +39,7 @@ export function createApifoxClient(options: ClientOptions): ApifoxClient {
         headers: {
           Authorization: `Bearer ${options.accessToken}`,
           "Content-Type": "application/json",
+          "X-Apifox-Api-Version": apifoxApiVersion,
         },
         body: JSON.stringify(body),
         signal: controller.signal,
