@@ -22,7 +22,7 @@ const toolModule: RegisterableModule = {
           return textResponse(ready.error);
         }
 
-        const change = pendingChanges.consume(args.changeId);
+        const change = pendingChanges.get(args.changeId);
         if (change === undefined) {
           return jsonResponse({ applied: false, error: "Pending change not found. Run preview again." });
         }
@@ -33,6 +33,7 @@ const toolModule: RegisterableModule = {
           moduleId: pendingValueToNumber(change.moduleId),
           document: change.document,
         });
+        pendingChanges.discard(args.changeId);
 
         return jsonResponse({ applied: true, summary: change.summary, result });
       },

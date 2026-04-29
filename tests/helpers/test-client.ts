@@ -20,6 +20,8 @@ export type TestClientConfig = {
   version?: string;
   capabilities?: Record<string, unknown>;
   serverPath?: string;
+  cwd?: string;
+  env?: Record<string, string>;
   stderr?: "pipe" | "ignore";
 }
 
@@ -35,6 +37,8 @@ export class TestClient {
       capabilities: config.capabilities ?? {},
       stderr: config.stderr ?? "ignore",
       serverPath: config.serverPath,
+      cwd: config.cwd,
+      env: config.env,
     };
   }
 
@@ -55,6 +59,8 @@ export class TestClient {
     this.transport = new StdioClientTransport({
       command: "node",
       args: [serverPath],
+      cwd: this.config.cwd,
+      env: this.config.env,
       stderr: this.config.stderr ?? "ignore",
     });
 
