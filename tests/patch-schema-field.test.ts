@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
-import { patchRequestBodyField, patchResponseField } from "../build/openapi/patch-schema-field.js";
 import { petstoreOpenApi } from "./fixtures/petstore-openapi.ts";
+import { patchRequestBodyField, patchResponseField } from "../build/openapi/patch-schema-field.js";
 
 describe("OpenAPI schema field patching", () => {
   it("adds a request body field", () => {

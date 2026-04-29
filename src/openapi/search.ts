@@ -1,22 +1,22 @@
 import { HTTP_METHODS, type HttpMethod, type OpenApiDocument, type OpenApiOperation } from "./types.js";
 
-export interface EndpointSearchInput {
+export type EndpointSearchInput = {
   path?: string;
   method?: HttpMethod;
   keyword?: string;
 }
 
-export interface EndpointSearchResult {
+export type EndpointSearchResult = {
   path: string;
   method: HttpMethod;
   summary?: string;
   operationId?: string;
-  tags?: string[];
+  tags?: Array<string>;
 }
 
-export function searchEndpoints(document: OpenApiDocument, input: EndpointSearchInput): EndpointSearchResult[] {
+export function searchEndpoints(document: OpenApiDocument, input: EndpointSearchInput): Array<EndpointSearchResult> {
   const keyword = input.keyword?.toLowerCase();
-  const results: EndpointSearchResult[] = [];
+  const results: Array<EndpointSearchResult> = [];
 
   for (const [path, pathItem] of Object.entries(document.paths)) {
     if (input.path !== undefined && !path.includes(input.path)) {
@@ -50,7 +50,7 @@ export function searchEndpoints(document: OpenApiDocument, input: EndpointSearch
   return results;
 }
 
-export function listMethodsForPath(document: OpenApiDocument, path: string): HttpMethod[] {
+export function listMethodsForPath(document: OpenApiDocument, path: string): Array<HttpMethod> {
   const pathItem = document.paths[path];
   if (pathItem === undefined) {
     return [];

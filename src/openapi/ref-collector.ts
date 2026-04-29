@@ -3,7 +3,7 @@ import type { OpenApiDocument } from "./types.js";
 const COMPONENT_SCHEMA_REF_PREFIX = "#/components/schemas/";
 const UNSAFE_COMPONENT_NAMES = new Set(["__proto__", "constructor", "prototype"]);
 
-export function collectSchemaRefs(value: unknown): string[] {
+export function collectSchemaRefs(value: unknown): Array<string> {
   const refs = new Set<string>();
   collectSchemaRefsInto(value, refs);
   return [...refs].sort();

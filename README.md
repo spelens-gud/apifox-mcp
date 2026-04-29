@@ -1,50 +1,93 @@
 # Apifox OpenAPI Patch MCP
 
-MCP server for safe Apifox OpenAPI patch previews and apply flows.
+This MCP server lets AI clients search Apifox OpenAPI documents, preview precise request/response changes, and apply approved changes through Apifox OpenAPI import.
 
-This repository currently contains the normalized TypeScript MCP baseline. Business tools, resources, prompts, and complete usage documentation will be added in later implementation tasks.
+## Safety Model
 
-## Requirements
+Read tools execute immediately. Write-like tools only create a preview and a `changeId`. Only `apifox_apply_change` writes back to Apifox.
 
-- Node.js 20.11.0 or newer
-- npm
+The apply flow imports a minimal OpenAPI document containing the target operation and referenced schemas. Import uses Apifox auto-merge behavior and does not delete unmatched resources.
 
-## Install
+## Tools
+
+- `apifox_search_endpoints`: Search endpoints by path, method, or keyword.
+- `apifox_get_endpoint`: Read one endpoint operation by path and method.
+- `apifox_export_openapi`: Export OpenAPI using an explicit Apifox scope.
+- `apifox_preview_request_param_change`: Preview adding or updating a request parameter.
+- `apifox_preview_request_body_field_change`: Preview adding or updating a request body schema field.
+- `apifox_preview_response_field_change`: Preview adding or updating a response schema field.
+- `apifox_apply_change`: Apply a previously previewed pending change.
+- `apifox_discard_change`: Discard a pending change.
+
+## Required Environment
+
+- `APIFOX_ACCESS_TOKEN`
+- `APIFOX_PROJECT_ID`
+
+Optional:
+
+- `APIFOX_API_BASE_URL`, defaults to `https://api.apifox.com`
+- `APIFOX_BRANCH_ID`
+- `APIFOX_MODULE_ID`
+- `APIFOX_TIMEOUT_MS`, defaults to `15000`
+- `APIFOX_MCP_TRANSPORT`, `stdio` or `http`, defaults to `stdio`
+- `PORT`, used by HTTP transport, defaults to `3000`
+
+## Local Commands
 
 ```bash
 npm install
-```
-
-## Build
-
-```bash
 npm run build
-```
-
-The build script clears `build/` before compiling so removed modules cannot be auto-registered from stale output.
-
-## Run
-
-Stdio transport:
-
-```bash
 npm run serve:stdio
 ```
 
 HTTP transport:
 
 ```bash
-npm run serve:http
+APIFOX_MCP_TRANSPORT=http PORT=3000 npm run serve:http
 ```
 
-The server reads `APIFOX_MCP_TRANSPORT` with supported values `stdio` and `http`. HTTP mode listens on `PORT`, defaulting to `3000`.
-
-## Development
+Development checks:
 
 ```bash
 npm run typecheck
-npm test
 npm run lint
+npm test
 ```
 
-The Task 1 baseline intentionally has no business MCP modules yet.
+## MCP Client Config
+
+Build before using the stdio config:
+
+```bash
+npm run build
+```
+
+Example:
+
+```json
+{
+  "mcpServers": {
+    "Apifox OpenAPI Patch": {
+      "command": "node",
+      "args": ["build/index.js"],
+      "env": {
+        "APIFOX_ACCESS_TOKEN": "<access-token>",
+        "APIFOX_PROJECT_ID": "<project-id>",
+        "APIFOX_MCP_TRANSPORT": "stdio"
+      }
+    }
+  }
+}
+```
+
+## Example Workflow
+
+1. Call `apifox_search_endpoints` to find the path and method.
+2. Call `apifox_preview_request_param_change`, `apifox_preview_request_body_field_change`, or `apifox_preview_response_field_change`.
+3. Review the returned `diff`.
+4. Call `apifox_apply_change` with the returned `changeId`.
+
+## Notes
+
+Apifox currently exposes OpenAPI import/export APIs at project or module scope. This server builds minimal OpenAPI documents for single-operation changes, so the AI client can work with one endpoint while Apifox still receives data through its supported OpenAPI import interface.

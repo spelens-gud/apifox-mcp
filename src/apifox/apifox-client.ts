@@ -1,14 +1,14 @@
-import type { OpenApiDocument } from "../openapi/types.js";
 import type { ExportOpenApiInput, ImportOpenApiInput, ImportOpenApiResult } from "./types.js";
+import type { OpenApiDocument } from "../openapi/types.js";
 
-interface ClientOptions {
+type ClientOptions = {
   apiBaseUrl: string;
   accessToken: string;
   timeoutMs: number;
   fetchImpl?: typeof fetch;
 }
 
-export interface ApifoxClient {
+export type ApifoxClient = {
   exportOpenApi(input: ExportOpenApiInput): Promise<OpenApiDocument>;
   importOpenApi(input: ImportOpenApiInput): Promise<ImportOpenApiResult>;
 }
@@ -30,7 +30,7 @@ export function createApifoxClient(options: ClientOptions): ApifoxClient {
 
   async function postJson(path: string, body: unknown): Promise<unknown> {
     const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), options.timeoutMs);
+    const timeout = setTimeout(() => { controller.abort(); }, options.timeoutMs);
     try {
       const response = await fetchImpl(joinUrl(options.apiBaseUrl, path), {
         method: "POST",

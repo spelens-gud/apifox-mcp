@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
-import { findOperation, listMethodsForPath, searchEndpoints } from "../build/openapi/search.js";
 import { petstoreOpenApi } from "./fixtures/petstore-openapi.ts";
+import { findOperation, listMethodsForPath, searchEndpoints } from "../build/openapi/search.js";
 
 describe("OpenAPI endpoint search", () => {
   it("returns only matching endpoint for path and method filters", () => {

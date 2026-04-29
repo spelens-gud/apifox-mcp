@@ -1,11 +1,11 @@
-export interface ApifoxConfig {
+export type ApifoxConfig = {
   apiBaseUrl: string;
   accessToken?: string;
   projectId?: string;
   branchId?: number;
   moduleId?: number;
   timeoutMs: number;
-  missingForRequest(input?: { projectId?: string; requireProjectId?: boolean }): string[];
+  missingForRequest(input?: { projectId?: string; requireProjectId?: boolean }): Array<string>;
 }
 
 function optionalString(value: string | undefined): string | undefined {
@@ -37,7 +37,7 @@ export function readApifoxConfig(env: NodeJS.ProcessEnv = process.env): ApifoxCo
   return {
     ...config,
     missingForRequest(input = {}) {
-      const missing: string[] = [];
+      const missing: Array<string> = [];
       if (!config.accessToken) {
         missing.push("APIFOX_ACCESS_TOKEN");
       }

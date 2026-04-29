@@ -1,18 +1,13 @@
 {
-  "servers": {
-    "apifox-openapi-patch-stdio": {
-      "type": "stdio",
+  "mcpServers": {
+    "Apifox OpenAPI Patch": {
       "command": "node",
-      "args": [
-        "./build/index.js"
-      ],
+      "args": ["build/index.js"],
       "env": {
+        "APIFOX_ACCESS_TOKEN": "<access-token>",
+        "APIFOX_PROJECT_ID": "<project-id>",
         "APIFOX_MCP_TRANSPORT": "stdio"
       }
-    },
-    "apifox-openapi-patch-http": {
-      "type": "http",
-      "url": "http://localhost:3000/mcp"
     }
   }
 }

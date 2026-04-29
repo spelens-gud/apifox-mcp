@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
-import { patchRequestParameter } from "../build/openapi/patch-request-param.js";
 import { petstoreOpenApi } from "./fixtures/petstore-openapi.ts";
+import { patchRequestParameter } from "../build/openapi/patch-request-param.js";
 
 describe("OpenAPI request parameter patching", () => {
   it("adds a query parameter to an operation", () => {

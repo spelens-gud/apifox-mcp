@@ -1,17 +1,19 @@
-import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
+import { jsonResponse, pendingValueToNumber, requireApifox, textResponse } from "./tool-helpers.js";
 import { pendingChanges } from "../pending/pending-changes.js";
 import type { RegisterableModule } from "../registry/types.js";
-import { jsonResponse, pendingValueToNumber, requireApifox, textResponse } from "./tool-helpers.js";
+import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+
+const description = "Apply a previously previewed Apifox OpenAPI change";
 
 const toolModule: RegisterableModule = {
   type: "tool",
   name: "apifox_apply_change",
-  description: "Apply a previously previewed Apifox OpenAPI change",
+  description,
   register(server: McpServer) {
     server.tool(
       "apifox_apply_change",
-      this.description!,
+      description,
       {
         projectId: z.string().optional(),
         changeId: z.string().min(1),

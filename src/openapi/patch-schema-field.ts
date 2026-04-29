@@ -1,6 +1,6 @@
 import type { HttpMethod, JsonSchemaObject, OpenApiDocument } from "./types.js";
 
-export interface FieldPatchInput {
+export type FieldPatchInput = {
   path: string;
   method: HttpMethod;
   contentType: string;
@@ -9,11 +9,11 @@ export interface FieldPatchInput {
   required?: boolean;
 }
 
-export interface ResponseFieldPatchInput extends FieldPatchInput {
+export type ResponseFieldPatchInput = {
   status: string;
-}
+} & FieldPatchInput
 
-export interface FieldPatchResult {
+export type FieldPatchResult = {
   action: "added" | "updated";
 }
 
@@ -97,7 +97,7 @@ function patchField(
   return { action };
 }
 
-function parseFieldPath(fieldPath: string): string[] {
+function parseFieldPath(fieldPath: string): Array<string> {
   if (fieldPath.length === 0 || fieldPath.startsWith(".") || fieldPath.endsWith(".") || fieldPath.includes("..")) {
     throw new Error(`Invalid field path: ${fieldPath}`);
   }

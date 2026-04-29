@@ -1,11 +1,11 @@
 import assert from "node:assert/strict";
 import { mkdtemp, rm } from "node:fs/promises";
 import { createServer, type IncomingMessage, type ServerResponse } from "node:http";
-import type { AddressInfo } from "node:net";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { describe, it } from "node:test";
 import { assertToolResponse, withTestClient } from "./helpers/test-client.ts";
+import type { AddressInfo } from "node:net";
 
 const apifoxEnvKeys = [
   "APIFOX_ACCESS_TOKEN",
@@ -15,17 +15,14 @@ const apifoxEnvKeys = [
   "APIFOX_TIMEOUT_MS",
   "APIFOX_API_BASE_URL",
 ] as const;
+const apifoxEnvKeySet = new Set<string>(apifoxEnvKeys);
 
 function createChildEnv(overrides: Record<string, string> = {}): Record<string, string> {
   const env: Record<string, string> = {};
   for (const [key, value] of Object.entries(process.env)) {
-    if (value !== undefined) {
+    if (value !== undefined && !apifoxEnvKeySet.has(key)) {
       env[key] = value;
     }
-  }
-
-  for (const key of apifoxEnvKeys) {
-    delete env[key];
   }
 
   return { ...env, ...overrides };

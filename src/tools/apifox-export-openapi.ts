@@ -1,7 +1,7 @@
-import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
-import type { RegisterableModule } from "../registry/types.js";
 import { jsonResponse, requireApifox, textResponse } from "./tool-helpers.js";
+import type { RegisterableModule } from "../registry/types.js";
+import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 
 const scopeSchema = z.discriminatedUnion("type", [
   z.object({ type: z.literal("ALL"), excludedByTags: z.array(z.string()).optional() }),
@@ -17,14 +17,16 @@ const scopeSchema = z.discriminatedUnion("type", [
   }),
 ]);
 
+const description = "Export OpenAPI from Apifox with an explicit scope";
+
 const toolModule: RegisterableModule = {
   type: "tool",
   name: "apifox_export_openapi",
-  description: "Export OpenAPI from Apifox with an explicit scope",
+  description,
   register(server: McpServer) {
     server.tool(
       "apifox_export_openapi",
-      this.description!,
+      description,
       {
         projectId: z.string().optional(),
         scope: scopeSchema.default({ type: "ALL" }),

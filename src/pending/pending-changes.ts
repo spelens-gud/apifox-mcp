@@ -1,7 +1,7 @@
 import { randomUUID } from "node:crypto";
 import type { OpenApiDocument } from "../openapi/types.js";
 
-export interface PendingChangeInput {
+export type PendingChangeInput = {
   projectId: string;
   targetBranchId?: string;
   moduleId?: string;
@@ -10,12 +10,12 @@ export interface PendingChangeInput {
   document: OpenApiDocument;
 }
 
-export interface PendingChange extends PendingChangeInput {
+export type PendingChange = {
   changeId: string;
   createdAt: string;
-}
+} & PendingChangeInput
 
-export interface PendingChangeStore {
+export type PendingChangeStore = {
   create(input: PendingChangeInput): PendingChange;
   get(changeId: string): PendingChange | undefined;
   consume(changeId: string): PendingChange | undefined;

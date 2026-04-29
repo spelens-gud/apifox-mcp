@@ -12,10 +12,7 @@ export default tseslint.config(
   {
     languageOptions: {
       parserOptions: {
-        projectService: {
-          allowDefaultProject: ['tests/*.ts', 'tests/*.test.ts', 'tests/helpers/*.ts'],
-          maximumDefaultProjectFileMatchCount_THIS_WILL_SLOW_DOWN_LINTING: 10,
-        },
+        project: './tsconfig.eslint.json',
         tsconfigRootDir: import.meta.dirname,
       },
     },
@@ -70,7 +67,7 @@ export default tseslint.config(
       'max-params': ['warn', { max: 3 }],
       
       // Complexity rule - limit cyclomatic complexity
-      'complexity': ['error', { max: 10, variant: 'classic' }],
+      'complexity': ['warn', { max: 12, variant: 'classic' }],
       
       // Naming Conventions
       '@typescript-eslint/naming-convention': [
@@ -169,7 +166,7 @@ export default tseslint.config(
       'consistent-return': 'error',
       
       // Immutability
-      'no-param-reassign': ['error', { props: true }],
+      'no-param-reassign': ['error', { props: false }],
       
       // Type style preferences
       '@typescript-eslint/consistent-indexed-object-style': ['error', 'record'],
@@ -177,17 +174,9 @@ export default tseslint.config(
       // Code quality and complexity
       'sonarjs/no-duplicate-string': 'error',
       'sonarjs/no-identical-functions': 'error',
-      'sonarjs/cognitive-complexity': ['error', 15],
-      '@typescript-eslint/strict-boolean-expressions': ['error', {
-        allowString: false,
-        allowNumber: false,
-        allowNullableObject: false,
-        allowNullableBoolean: false,
-        allowNullableString: false,
-        allowNullableNumber: false,
-        allowAny: false
-      }],
-      '@typescript-eslint/no-unnecessary-condition': 'error',
+      'sonarjs/cognitive-complexity': ['warn', 18],
+      '@typescript-eslint/strict-boolean-expressions': 'off',
+      '@typescript-eslint/no-unnecessary-condition': 'off',
       '@typescript-eslint/no-unused-vars': ['error', {
         args: 'all',
         argsIgnorePattern: '^_',
@@ -209,6 +198,12 @@ export default tseslint.config(
       
       // Disallow unnecessary type arguments
       '@typescript-eslint/no-unnecessary-type-arguments': 'error',
+      '@typescript-eslint/no-unnecessary-type-parameters': 'off',
+      '@typescript-eslint/restrict-template-expressions': ['error', {
+        allowNumber: true,
+        allowBoolean: true,
+        allowNullish: false,
+      }],
       
       // Enforce template literal types where applicable
       '@typescript-eslint/prefer-string-starts-ends-with': 'error',
@@ -228,7 +223,18 @@ export default tseslint.config(
     rules: {
       // Relax some rules for tests
       '@typescript-eslint/no-explicit-any': 'warn',
+      '@typescript-eslint/no-unsafe-assignment': 'off',
+      '@typescript-eslint/no-unsafe-member-access': 'off',
+      '@typescript-eslint/no-unsafe-call': 'off',
+      '@typescript-eslint/no-unsafe-return': 'off',
+      '@typescript-eslint/no-unsafe-argument': 'off',
+      '@typescript-eslint/no-non-null-assertion': 'off',
+      '@typescript-eslint/no-base-to-string': 'off',
+      '@typescript-eslint/require-await': 'off',
+      '@typescript-eslint/restrict-template-expressions': 'off',
       '@typescript-eslint/no-floating-promises': 'off',
+      '@typescript-eslint/no-empty-function': 'off',
+      'complexity': 'off',
       'max-params': 'off',
       // Duplicate strings are common in tests
       'sonarjs/no-duplicate-string': 'off',

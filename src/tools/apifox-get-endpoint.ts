@@ -1,19 +1,20 @@
-import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
-import type { RegisterableModule } from "../registry/types.js";
-import { findOperation, listMethodsForPath } from "../openapi/search.js";
 import { jsonResponse, requireApifox, textResponse } from "./tool-helpers.js";
+import { findOperation, listMethodsForPath } from "../openapi/search.js";
+import type { RegisterableModule } from "../registry/types.js";
+import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 
 const methodSchema = z.enum(["get", "post", "put", "patch", "delete", "head", "options", "trace"]);
+const description = "Read one Apifox OpenAPI endpoint operation by path and method";
 
 const toolModule: RegisterableModule = {
   type: "tool",
   name: "apifox_get_endpoint",
-  description: "Read one Apifox OpenAPI endpoint operation by path and method",
+  description,
   register(server: McpServer) {
     server.tool(
       "apifox_get_endpoint",
-      this.description!,
+      description,
       {
         projectId: z.string().optional(),
         path: z.string().min(1),

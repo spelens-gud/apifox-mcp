@@ -1,6 +1,6 @@
 import type { HttpMethod, JsonSchemaObject, OpenApiDocument, OpenApiParameter } from "./types.js";
 
-export interface PatchRequestParameterInput {
+export type PatchRequestParameterInput = {
   path: string;
   method: HttpMethod;
   name: string;
@@ -10,7 +10,7 @@ export interface PatchRequestParameterInput {
   schema: JsonSchemaObject;
 }
 
-export interface PatchResult {
+export type PatchResult = {
   action: "added" | "updated";
   path: string;
   method: HttpMethod;

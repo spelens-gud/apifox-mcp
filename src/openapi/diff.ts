@@ -15,16 +15,22 @@ export function createJsonDiff(before: unknown, after: unknown): string {
   }
 
   for (let index = start; index <= beforeEnd; index += 1) {
-    diffLines.push(`-${beforeLines[index]}`);
+    const line = beforeLines[index];
+    if (line !== undefined) {
+      diffLines.push(`-${line}`);
+    }
   }
 
   for (let index = start; index <= afterEnd; index += 1) {
-    diffLines.push(`+${afterLines[index]}`);
+    const line = afterLines[index];
+    if (line !== undefined) {
+      diffLines.push(`+${line}`);
+    }
   }
 
   return diffLines.join("\n");
 }
 
-function stringifyJson(value: unknown): string[] {
+function stringifyJson(value: unknown): Array<string> {
   return JSON.stringify(value, null, 2).split("\n");
 }

@@ -1,20 +1,20 @@
 export type HttpMethod = "get" | "post" | "put" | "patch" | "delete" | "head" | "options" | "trace";
 
-export interface JsonSchemaObject {
+export type JsonSchemaObject = {
   type?: string;
   format?: string;
   description?: string;
   default?: unknown;
-  enum?: unknown[];
+  enum?: Array<unknown>;
   properties?: Record<string, JsonSchemaObject>;
-  required?: string[];
+  required?: Array<string>;
   items?: JsonSchemaObject;
   $ref?: string;
   additionalProperties?: boolean | JsonSchemaObject;
   [key: string]: unknown;
 }
 
-export interface OpenApiParameter {
+export type OpenApiParameter = {
   name: string;
   in: "query" | "path" | "header" | "cookie";
   required?: boolean;
@@ -23,12 +23,12 @@ export interface OpenApiParameter {
   [key: string]: unknown;
 }
 
-export interface OpenApiOperation {
+export type OpenApiOperation = {
   summary?: string;
   description?: string;
   operationId?: string;
-  tags?: string[];
-  parameters?: OpenApiParameter[];
+  tags?: Array<string>;
+  parameters?: Array<OpenApiParameter>;
   requestBody?: {
     content?: Record<string, { schema?: JsonSchemaObject }>;
     required?: boolean;
@@ -45,7 +45,7 @@ export interface OpenApiOperation {
   [key: string]: unknown;
 }
 
-export interface OpenApiDocument {
+export type OpenApiDocument = {
   openapi?: string;
   swagger?: string;
   info: { title?: string; version?: string; [key: string]: unknown };
@@ -61,4 +61,4 @@ export interface OpenApiDocument {
   [key: string]: unknown;
 }
 
-export const HTTP_METHODS: readonly HttpMethod[] = ["get", "post", "put", "patch", "delete", "head", "options", "trace"] as const;
+export const HTTP_METHODS: ReadonlyArray<HttpMethod> = ["get", "post", "put", "patch", "delete", "head", "options", "trace"] as const;
