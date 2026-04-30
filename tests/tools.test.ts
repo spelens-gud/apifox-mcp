@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
 import { mkdtemp, rm } from "node:fs/promises";
 import { createServer, type IncomingMessage, type ServerResponse } from "node:http";
 import { tmpdir } from "node:os";
@@ -126,6 +127,19 @@ describe("Apifox tools", () => {
         "apifox_preview_response_field_change",
         "apifox_search_endpoints",
       ]);
+
+      const config = JSON.parse(readFileSync("mcp.json", "utf8")) as {
+        mcpServers: Record<string, unknown>;
+      };
+      const serverNames = Object.keys(config.mcpServers);
+      for (const serverName of serverNames) {
+        for (const toolName of names) {
+          assert.ok(
+            serverName.length + toolName.length < 60,
+            `${serverName}: ${toolName} exceeds Cursor combined name limit`,
+          );
+        }
+      }
     });
   });
 

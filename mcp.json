@@ -1,6 +1,6 @@
 {
   "mcpServers": {
-    "Apifox OpenAPI Patch": {
+    "Apifox": {
       "command": "node",
       "args": ["build/index.js"],
       "env": {
